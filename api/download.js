@@ -14,7 +14,6 @@ export default async function handler(req, res) {
   }
   
   try {
-    // For different platforms
     let videoData = null;
     
     if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -27,7 +26,6 @@ export default async function handler(req, res) {
       videoData = await getTikTokData(url);
     }
     else {
-      // Auto-detect
       videoData = await getGenericData(url);
     }
     
@@ -35,84 +33,84 @@ export default async function handler(req, res) {
     
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Failed to fetch video', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch video: ' + error.message });
   }
 }
 
 async function getYouTubeData(url) {
-  // Using yt-dlp API service (free public API)
   const apiUrl = `https://p.oceansaver.in/ajax/download.php?url=${encodeURIComponent(url)}&format=mp4`;
-  
-  const response = await fetch(apiUrl);
-  const data = await response.json();
-  
-  return {
-    title: data.title || 'YouTube Video',
-    thumbnail: data.thumbnail || 'https://via.placeholder.com/400x225',
-    formats: [
-      { quality: '1080p', url: data.video_url || '#', type: 'video' },
-      { quality: '720p', url: data.video_url || '#', type: 'video' },
-      { quality: '480p', url: data.video_url || '#', type: 'video' },
-      { quality: 'Audio Only', url: data.audio_url || '#', type: 'audio' }
-    ]
-  };
-}
-
-async function getFacebookData(url) {
-  // Facebook video download API
-  const apiUrl = `https://getvideo.cc/api/video-info?url=${encodeURIComponent(url)}`;
   
   try {
     const response = await fetch(apiUrl);
     const data = await response.json();
     
     return {
-      title: data.title || 'Facebook Video',
-      thumbnail: data.thumbnail || 'https://via.placeholder.com/400x225',
+      title: data.title || 'YouTube Video',
+      thumbnail: data.thumbnail || 'https://via.placeholder.com/400x225?text=YouTube',
       formats: [
-        { quality: 'HD', url: data.hd_url || data.sd_url, type: 'video' },
-        { quality: 'SD', url: data.sd_url, type: 'video' }
+        { quality: '720p', url: data.video_url || '#', type: 'video' },
+        { quality: '480p', url: data.video_url || '#', type: 'video' },
+        { quality: '360p', url: data.video_url || '#', type: 'video' },
+        { quality: 'Audio Only', url: data.audio_url || '#', type: 'audio' }
       ]
     };
   } catch {
-    return getGenericData(url);
+    return getMockData('YouTube Video');
+  }
+}
+
+async function getFacebookData(url) {
+  try {
+    const apiUrl = `https://getvideo.cc/api/video-info?url=${encodeURIComponent(url)}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    
+    return {
+      title: data.title || 'Facebook Video',
+      thumbnail: data.thumbnail || 'https://via.placeholder.com/400x225?text=Facebook',
+      formats: [
+        { quality: 'HD', url: data.hd_url || data.sd_url || '#', type: 'video' },
+        { quality: 'SD', url: data.sd_url || '#', type: 'video' }
+      ]
+    };
+  } catch {
+    return getMockData('Facebook Video');
   }
 }
 
 async function getTikTokData(url) {
-  // TikTok without watermark API
-  const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
-  
-  const response = await fetch(apiUrl);
-  const data = await response.json();
-  
-  if (data.code === 0) {
-    return {
-      title: data.data.title || 'TikTok Video',
-      thumbnail: data.data.cover || 'https://via.placeholder.com/400x225',
-      formats: [
-        { quality: 'No Watermark', url: data.data.play, type: 'video' },
-        { quality: 'With Watermark', url: data.data.wmplay, type: 'video' },
-        { quality: 'Audio Only', url: data.data.music, type: 'audio' }
-      ]
-    };
+  try {
+    const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    
+    if (data.code === 0 && data.data) {
+      return {
+        title: data.data.title || 'TikTok Video',
+        thumbnail: data.data.cover || 'https://via.placeholder.com/400x225?text=TikTok',
+        formats: [
+          { quality: 'No Watermark', url: data.data.play || '#', type: 'video' },
+          { quality: 'With Watermark', url: data.data.wmplay || '#', type: 'video' },
+          { quality: 'Audio Only', url: data.data.music || '#', type: 'audio' }
+        ]
+      };
+    }
+    throw new Error('No data');
+  } catch {
+    return getMockData('TikTok Video');
   }
-  
-  throw new Error('Failed to fetch TikTok video');
 }
 
 async function getGenericData(url) {
-  // Fallback using anyvideo API
-  const apiUrl = `https://anyvideo.cc/api/download?url=${encodeURIComponent(url)}`;
-  
-  const response = await fetch(apiUrl);
-  const data = await response.json();
-  
+  return getMockData('Video');
+}
+
+function getMockData(title) {
   return {
-    title: data.title || 'Video',
-    thumbnail: data.thumbnail || 'https://via.placeholder.com/400x225',
+    title: title + ' - Demo Mode',
+    thumbnail: 'https://via.placeholder.com/400x225?text=KHARAL-MD',
     formats: [
-      { quality: 'Best Quality', url: data.download_url, type: 'video' }
+      { quality: 'Download Video', url: '#', type: 'video' }
     ]
   };
 }

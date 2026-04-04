@@ -1,6 +1,5 @@
 {
   "name": "kharal-md-downloader",
   "version": "1.0.0",
-  "description": "Video Downloader for YouTube, Facebook, TikTok",
-  "main": "api/download.js"
+  "description": "Video Downloader for YouTube, Facebook, TikTok"
 }

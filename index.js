@@ -209,13 +209,13 @@
             margin-top: 15px;
         }
         
+        .powered { text-align: center; font-size: 12px; margin-top: 15px; opacity: 0.8; }
+        
         @media (max-width: 480px) {
             .container { padding: 20px 15px; }
             .brand-text { font-size: 18px; }
             .logo-img { width: 35px; height: 35px; }
         }
-        
-        .powered { text-align: center; font-size: 12px; margin-top: 15px; opacity: 0.8; }
     </style>
 </head>
 <body>
